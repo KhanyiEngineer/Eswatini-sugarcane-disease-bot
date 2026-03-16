@@ -5,6 +5,7 @@ import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
 import io
+from torchvision.models import resnet50
 
 app = FastAPI(title="Sugarcane Disease Classifier")
 
