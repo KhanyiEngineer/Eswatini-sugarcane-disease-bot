@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 torch==2.10.0
-torchvision==0.21.0
+torchvision==0.25.0  # latest available in Render's index
 pillow
 numpy
 gdown
