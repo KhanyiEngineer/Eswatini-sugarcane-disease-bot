@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 import torch
+torch.set_default_tensor_type('torch.FloatTensor')  # force CPU-only mode
 import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
@@ -45,17 +46,32 @@ model = SE_ResNet50(num_classes=5)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #IMPORT THE MODEL FROM GDRIVE
+import os
 import gdown
 
-weights_url = "https://drive.google.com/uc?id=1Ja19W-42cdqFDpbl4btyuEFnj46aAYbK"  # replace with your ID
-gdown.download(weights_url, "model_weights.pth", quiet=False)
+# Get URL from Render env var (you set this on dashboard)
+weights_url = os.getenv("WEIGHTS_URL")
 
-model.load_state_dict(torch.load("model_weights.pth", map_location=device))
+if not weights_url:
+    raise RuntimeError("WEIGHTS_URL environment variable is not set on Render!")
+
+print(f"Downloading model weights from: {weights_url}")
+
+try:
+    gdown.download(weights_url, "model_weights.pth", quiet=False)
+except Exception as e:
+    raise RuntimeError(f"Failed to download weights: {str(e)}")
+
+try:
+    state_dict = torch.load("model_weights.pth", map_location=device)
+    model.load_state_dict(state_dict)
+except Exception as e:
+    raise RuntimeError(f"Failed to load state_dict: {str(e)}")
 
 model.to(device)
 model.eval()
 
-print("Model loaded!")
+print("Model loaded successfully!")
 
 # Preprocessing
 transform = transforms.Compose([
