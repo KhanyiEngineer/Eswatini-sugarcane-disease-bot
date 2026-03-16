@@ -35,12 +35,22 @@ class SE_ResNet50(nn.Module):
         return self.base(x)
 
 # Load model once at startup
-device = torch.device('cpu')
+device = torch.device('cpu')  # Vercel runs on CPU
 model = SE_ResNet50(num_classes=5)
 
-# Weights file in same folder
-weights_path = "model_weights.pth"
-model.load_state_dict(torch.load(weights_path, map_location=device))
+# <--- THIS IS THE LINE YOU'RE LOOKING FOR --->
+#weights_path = "model_weights.pth"  # or your original filename
+#model.load_state_dict(torch.load(weights_path, map_location=device))
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#IMPORT THE MODEL FROM GDRIVE
+import gdown
+
+weights_url = "https://drive.google.com/uc?id=1Ja19W-42cdqFDpbl4btyuEFnj46aAYbK"  # replace with your ID
+gdown.download(weights_url, "model_weights.pth", quiet=False)
+
+model.load_state_dict(torch.load("model_weights.pth", map_location=device))
+
 model.to(device)
 model.eval()
 
